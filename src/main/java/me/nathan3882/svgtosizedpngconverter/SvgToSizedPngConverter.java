@@ -5,6 +5,7 @@ import me.nathan3882.svgtosizedpngconverter.exceptions.LackOfTransformationExcep
 import me.nathan3882.svgtosizedpngconverter.transformers.AndroidImageTransformer;
 import me.nathan3882.svgtosizedpngconverter.transformers.IOSImageTransformer;
 import me.nathan3882.svgtosizedpngconverter.transformers.SvgImageTransformer;
+import me.nathan3882.svgtosizedpngconverter.types.FileType;
 import org.apache.batik.transcoder.TranscoderException;
 import org.apache.commons.cli.*;
 import org.apache.commons.io.FilenameUtils;
@@ -20,7 +21,6 @@ public class SvgToSizedPngConverter {
 
     private static final Argument OUTPUT_FILE_DIR_ARG = Argument.OUTPUT_FILE_DIRECTORY;
     private static final Argument INPUT_FILE_ARG = Argument.INPUT_FILE;
-    private static final String SVG_EXTENSION = "svg";
 
     public static void main(String[] args) throws IOException, ParseException, TranscoderException, TransformerException, DuplicateFileException, LackOfTransformationException {
 
@@ -85,7 +85,7 @@ public class SvgToSizedPngConverter {
         final File inputFile = new File(specifiedInputFilePathname);
 
         final boolean exists = inputFile.exists();
-        if (!exists || !FilenameUtils.getExtension(inputFile.getName()).equals(SVG_EXTENSION)) {
+        if (!exists || !FilenameUtils.getExtension(inputFile.getName()).equals(FileType.SVG.getExtensionNoDot())) {
             //terminate as we can't get the svg file.
             System.out.println("We cant find a dot svg file @ " + specifiedInputFilePathname);
             return;
