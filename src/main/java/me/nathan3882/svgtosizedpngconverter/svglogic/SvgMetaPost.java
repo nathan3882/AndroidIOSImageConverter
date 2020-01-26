@@ -1,7 +1,6 @@
 package me.nathan3882.svgtosizedpngconverter.svglogic;
 
 import org.apache.batik.anim.dom.SAXSVGDocumentFactory;
-import org.apache.batik.anim.dom.SVGOMSVGElement;
 import org.apache.batik.bridge.*;
 import org.apache.batik.util.XMLResourceDescriptor;
 import org.w3c.dom.Document;
@@ -12,8 +11,7 @@ import java.io.IOException;
 /**
  * Responsible for converting all SVG path elements into MetaPost curves.
  */
-public class SVGMetaPost {
-    private static final String PATH_ELEMENT_NAME = "path";
+public class SvgMetaPost {
 
     private Document svgDocument;
 
@@ -21,21 +19,13 @@ public class SVGMetaPost {
      * Creates an SVG Document given a URI.
      *
      * @param uri Path to the file.
-     * @throws Exception Something went wrong parsing the SVG file.
+     * @throws IOException Something went wrong parsing the SVG file.
      */
-    public SVGMetaPost(String uri) throws IOException {
+    public SvgMetaPost(String uri) throws IOException {
         setSVGDocument(createSVGDocument(uri));
     }
 
 
-    /**
-     * Returns an SVGOMSVGElement that is the document's root element.
-     *
-     * @return The SVG document typecast into an SVGOMSVGElement.
-     */
-    private SVGOMSVGElement getSVGDocumentRoot() {
-        return (SVGOMSVGElement) getSVGDocument().getDocumentElement();
-    }
 
     /**
      * This will set the document to parse. This method also initializes
@@ -81,7 +71,7 @@ public class SVGMetaPost {
      *
      * @param uri The path to the SVG file to read.
      * @return A Document instance that represents the SVG file.
-     * @throws Exception The file could not be read.
+     * @throws IOException The file could not be read.
      */
     private Document createSVGDocument(String uri) throws IOException {
         String parser = XMLResourceDescriptor.getXMLParserClassName();

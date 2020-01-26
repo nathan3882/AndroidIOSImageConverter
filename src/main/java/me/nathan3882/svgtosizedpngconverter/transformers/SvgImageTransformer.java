@@ -107,6 +107,7 @@ public abstract class SvgImageTransformer implements Transformable {
             if (isPngAlso) {
                 try {
                     baseSvgFile.createPngAlternative();
+                    System.out.print(" Created a png alternative in the same directory also!");
                 } catch (TranscoderException e) {
                     e.printStackTrace();
                 }
@@ -116,39 +117,15 @@ public abstract class SvgImageTransformer implements Transformable {
         return true;
     }
 
-    /**
-     * @param fileToResizeInMemory the {@link SvgFile} to resize.
-     * @param newWidth             the new width
-     * @param newHeight            the new height
-     * @return the {@link SvgFile} resized according to new width / height param values.
-     */
-    protected SvgFile resizeInMemory(SvgFile fileToResizeInMemory, int newWidth, int newHeight) throws IOException, TransformerException {
-        fileToResizeInMemory.resizeInMemory(newWidth, newHeight);
-        return fileToResizeInMemory;
-    }
-
     protected String getOutputDirectoryPath() {
         return this.outputDirectoryPath;
     }
 
     public abstract File getOutputDirectory();
 
-    public static DOMImplementation getSvgDomImplementation() {
-        return SVG_DOM_IMPLEMENTATION;
-    }
-
     public String getInputSvgPath() {
         return inputSvgPath;
     }
-
-    protected File getInputSvgFile() {
-        return this.inputSvgFile;
-    }
-
-    protected BufferedImage getInputSvgAsBufferedImage() {
-        return this.inputSvgAsBufferedImage;
-    }
-
     public String getInputSvgFileName() {
         return inputSvgFileName;
     }

@@ -77,7 +77,7 @@ public class SvgFile extends File implements TwoDimentional {
         this.width = newWidth;
 
         final String uri = super.toURI().toString();
-        final SVGMetaPost svgMetaPost = new SVGMetaPost(uri);
+        final SvgMetaPost svgMetaPost = new SvgMetaPost(uri);
 
         final SVGOMDocument svgDocument = (SVGOMDocument) svgMetaPost.getSVGDocument();
         final SVGOMSVGElement documentElement = (SVGOMSVGElement) svgDocument.getDocumentElement();
