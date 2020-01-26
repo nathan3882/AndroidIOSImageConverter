@@ -18,8 +18,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.URI;
-import java.net.URL;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -177,13 +175,13 @@ public class SvgFile extends File implements TwoDimentional {
     @Override
     public int getHeight() {
         final Optional<Integer> newHeight = Optional.ofNullable(this.width);
-        return newHeight.isPresent() ? newHeight.get() : 0;
+        return newHeight.isPresent() ? newHeight.get() : 1;
     }
 
     @Override
     public int getWidth() {
         final Optional<Integer> newWidth = Optional.ofNullable(this.height);
-        return newWidth.isPresent() ? newWidth.get() : 0;
+        return newWidth.isPresent() ? newWidth.get() : 1;
     }
 
     public SvgFile getResizedSvgFile() {
