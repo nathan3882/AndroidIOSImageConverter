@@ -6,59 +6,79 @@ import me.nathan3882.svgtosizedpngconverter.transformers.AndroidImageTransformer
 import me.nathan3882.svgtosizedpngconverter.transformers.IOSImageTransformer;
 import me.nathan3882.svgtosizedpngconverter.transformers.SvgImageTransformer;
 import me.nathan3882.svgtosizedpngconverter.types.FileType;
-import org.apache.batik.transcoder.TranscoderException;
 import org.apache.commons.cli.*;
 import org.apache.commons.io.FilenameUtils;
 
 import javax.xml.transform.TransformerException;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.Scanner;
 
 public class SvgToSizedPngConverter {
 
     private static final Argument OUTPUT_FILE_DIR_ARG = Argument.OUTPUT_FILE_DIRECTORY;
     private static final Argument INPUT_FILE_ARG = Argument.INPUT_FILE;
+    private static final InputStream in = System.in;
+    private static final String[] EMPTY_ARRAY = new String[]{ };
 
-    public static void main(String[] args) throws IOException, ParseException, TranscoderException, TransformerException, DuplicateFileException, LackOfTransformationException {
+    public static void main(String[] args) throws IOException, ParseException, TransformerException, DuplicateFileException, LackOfTransformationException {
+
+        String[] scannerArgs = queryForArgs();
 
         final Options argumentOptions = new Options();
+
+        for (Option configuredArgumentOption : SvgToSizedPngConverter.getConfiguredArgumentOptions()) {
+            argumentOptions.addOption(configuredArgumentOption);
+        }
+
+        CommandLine commandLineOptionContainer = null;
+
+        boolean providedOptions = false;
+        while (!providedOptions) {
+            try {
+                commandLineOptionContainer = new DefaultParser().parse(argumentOptions, scannerArgs);
+            } catch (MissingOptionException e) {
+                scannerArgs = queryForArgs();
+                continue;
+            }
+            providedOptions = true;
+        }
 
         final String outputDirectoryArgOptionString = OUTPUT_FILE_DIR_ARG.getArgumentString();
         final String inputSvgFileArgOptionString = INPUT_FILE_ARG.getArgumentString();
 
-        final List<Option> configuredArgumentOptions = SvgToSizedPngConverter.getConfiguredArgumentOptions();
-
-        for (Option configuredArgumentOption : configuredArgumentOptions) {
-            argumentOptions.addOption(configuredArgumentOption);
-        }
-
-        CommandLine commandLineOptionContainer = new DefaultParser().parse(argumentOptions, args);
 
         File imageOutputDirectory; //this is the directory that we will output the iOS and Android images to.
         if (commandLineOptionContainer.hasOption(outputDirectoryArgOptionString)) {
 
             final Optional<String> specifiedOutputFileDirectoryOptional = Argument.OUTPUT_FILE_DIRECTORY.getValueFromContainer(commandLineOptionContainer);
             if (!specifiedOutputFileDirectoryOptional.isPresent()) {
-                System.out.println("We couldn't fetch the output file directory from the run arguments... strange :(");
+                sendBlank();
+                System.out.println("We couldn't fetch the output file directory from the run arguments :(");
+                sendBlank();
                 return;
             }
 
             String specifiedOutputFileDirectory = specifiedOutputFileDirectoryOptional.get();
 
+
+            sendBlank();
             System.out.print("Output Directory argument option found - (-" + outputDirectoryArgOptionString + ").  " +
                     "Now outputting the iOS Images and Android Images to " + specifiedOutputFileDirectory + System.getProperty("line.separator"));
-
+            sendBlank();
             if (specifiedOutputFileDirectory.equals("desktop")) {
                 imageOutputDirectory = new File(System.getProperty("user.home") + File.separatorChar + "Desktop");
             } else {
                 imageOutputDirectory = new File(specifiedOutputFileDirectory);
             }
         } else {
+            sendBlank();
             System.out.println("Please specify an output directory using the option -o. For example append '-o desktop' or the full path.");
-
+            sendBlank();
             return;
         }
 
@@ -69,7 +89,7 @@ public class SvgToSizedPngConverter {
             final Optional<String> specifiedInputFilePathnameOptional = INPUT_FILE_ARG.getValueFromContainer(commandLineOptionContainer);
 
             if (!specifiedInputFilePathnameOptional.isPresent()) {
-                System.out.println("We couldn't fetch the output file directory from the run arguments... strange :(");
+                System.out.println("We couldn't fetch the input file directory from the run arguments... strange :(");
                 return;
             }
 
@@ -77,7 +97,47 @@ public class SvgToSizedPngConverter {
 
             SvgToSizedPngConverter.doTransformation(imageOutputDirectory, specifiedInputFilePathname);
 
+        }
+    }
 
+    private static String[] queryForArgs() {
+        sendBlank(2);
+        System.out.println("Please provide an argument for the output (-o) and the input svg file (-i). Enter desktop for 'System.getProperty(\"user.home\") + File.separatorChar + \"Desktop\"' as the output location... For example:");
+        sendBlank();
+        System.out.println("-o \"desktop\" -i \"C:\\Stock Input\\hamburger-icon.svg\"");
+        sendBlank(2);
+
+        System.out.print("Type here:-> ");
+
+        Scanner scanner = new Scanner(in);
+        if (scanner.hasNext()) {
+            return Arrays.stream(disregardedSplit(scanner.nextLine())) //Stream the entered text
+                    .map(entry -> entry.replace("\"", "")) //strip it of it's " characters
+                    .toArray(String[]::new); //Collect to new array.
+
+        }
+        scanner.close();
+        return EMPTY_ARRAY;
+
+    }
+
+    /**
+     * This will split by a space. However, if this is inside double quotes then it will not be counted.
+     *
+     * @param input the input to perform the regex match on
+     * @return a disregarded split.
+     */
+    private static String[] disregardedSplit(String input) {
+        return input.split(" (?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
+    }
+
+    private static void sendBlank() {
+        sendBlank(1);
+    }
+
+    private static void sendBlank(int number) {
+        for (int i = 0; i < number; i++) {
+            System.out.println(" ");
         }
     }
 
@@ -87,7 +147,14 @@ public class SvgToSizedPngConverter {
         final boolean exists = inputFile.exists();
         if (!exists || !FilenameUtils.getExtension(inputFile.getName()).equals(FileType.SVG.getExtensionNoDot())) {
             //terminate as we can't get the svg file.
+            sendBlank();
             System.out.println("We cant find a dot svg file @ " + specifiedInputFilePathname);
+            sendBlank();
+            try {
+                main(EMPTY_ARRAY);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
             return;
         }
 
@@ -104,6 +171,7 @@ public class SvgToSizedPngConverter {
         final String androidPretty = androidImageTransformer.getTransformerType().getPretty();
         final String iosPretty = iOSImageTransformer.getTransformerType().getPretty();
 
+        sendBlank();
         if (iOSDoneSuccessfully) {
             System.out.println(iosPretty + " images have been created at " + iOSImageTransformer.getOutputDirectory());
         } else {

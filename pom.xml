@@ -17,11 +17,44 @@
                     <target>8</target>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>1.6</version>
+                <configuration>
+                    <finalName>
+                        SVGTSPC-shaded
+                    </finalName>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <!-- Build an executable JAR -->
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.1.0</version>
+                <configuration>
+                        <finalName>SVGTSPC</finalName>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix>lib/</classpathPrefix>
+                            <mainClass>me.nathan3882.svgtosizedpngconverter.SvgToSizedPngConverter</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
     <dependencies>
-
         <!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
         <dependency>
             <groupId>commons-io</groupId>
@@ -49,75 +82,6 @@
             <artifactId>commons-lang3</artifactId>
             <version>3.9</version>
         </dependency>
-
-        <!--        &lt;!&ndash; https://mvnrepository.com/artifact/org.apache.xmlgraphics/batik-svggen &ndash;&gt;-->
-        <!--        <dependency>-->
-        <!--            <groupId>org.apache.xmlgraphics</groupId>-->
-        <!--            <artifactId>batik-svggen</artifactId>-->
-        <!--            <version>LATEST</version>-->
-        <!--        </dependency>-->
-
-        <!--        &lt;!&ndash; https://mvnrepository.com/artifact/org.apache.xmlgraphics/batik-dom &ndash;&gt;-->
-        <!--        <dependency>-->
-        <!--            <groupId>org.apache.xmlgraphics</groupId>-->
-        <!--            <artifactId>batik-dom</artifactId>-->
-        <!--            <version>LATEST</version>-->
-        <!--        </dependency>-->
-
-        <!--        &lt;!&ndash; https://mvnrepository.com/artifact/org.apache.xmlgraphics/batik-anim &ndash;&gt;-->
-        <!--        <dependency>-->
-        <!--            <groupId>org.apache.xmlgraphics</groupId>-->
-        <!--            <artifactId>batik-anim</artifactId>-->
-        <!--            <version>LATEST</version>-->
-        <!--        </dependency>-->
-
-        <!--        &lt;!&ndash; https://mvnrepository.com/artifact/org.apache.xmlgraphics/batik-svg-dom &ndash;&gt;-->
-        <!--        <dependency>-->
-        <!--            <groupId>org.apache.xmlgraphics</groupId>-->
-        <!--            <artifactId>batik-svg-dom</artifactId>-->
-        <!--            <version>LATEST</version>-->
-        <!--        </dependency>-->
-
-        <!--        &lt;!&ndash; https://mvnrepository.com/artifact/org.apache.xmlgraphics/batik-util &ndash;&gt;-->
-        <!--        <dependency>-->
-        <!--            <groupId>org.apache.xmlgraphics</groupId>-->
-        <!--            <artifactId>batik-util</artifactId>-->
-        <!--            <version>LATEST</version>-->
-        <!--        </dependency>-->
-
-        <!--        &lt;!&ndash; https://mvnrepository.com/artifact/org.apache.xmlgraphics/batik-script &ndash;&gt;-->
-        <!--        <dependency>-->
-        <!--            <groupId>org.apache.xmlgraphics</groupId>-->
-        <!--            <artifactId>batik-script</artifactId>-->
-        <!--            <version>LATEST</version>-->
-        <!--        </dependency>-->
-
-        <!--        &lt;!&ndash; https://mvnrepository.com/artifact/batik/batik-awt-util &ndash;&gt;-->
-        <!--        <dependency>-->
-        <!--            <groupId>batik</groupId>-->
-        <!--            <artifactId>batik-awt-util</artifactId>-->
-        <!--            <version>LATEST</version>-->
-        <!--        </dependency>-->
-        <!--        &lt;!&ndash; https://mvnrepository.com/artifact/org.apache.xmlgraphics/batik-bridge &ndash;&gt;-->
-        <!--        <dependency>-->
-        <!--            <groupId>org.apache.xmlgraphics</groupId>-->
-        <!--            <artifactId>batik-bridge</artifactId>-->
-        <!--            <version>LATEST</version>-->
-        <!--        </dependency>-->
-
-        <!--        &lt;!&ndash; https://mvnrepository.com/artifact/org.apache.xmlgraphics/batik-css &ndash;&gt;-->
-        <!--        <dependency>-->
-        <!--            <groupId>org.apache.xmlgraphics</groupId>-->
-        <!--            <artifactId>batik-css</artifactId>-->
-        <!--            <version>1.7</version>-->
-        <!--        </dependency>-->
-
-        <!--        &lt;!&ndash; https://mvnrepository.com/artifact/org.apache.xmlgraphics/batik-ext &ndash;&gt;-->
-        <!--        <dependency>-->
-        <!--            <groupId>org.apache.xmlgraphics</groupId>-->
-        <!--            <artifactId>batik-ext</artifactId>-->
-        <!--            <version>1.12</version>-->
-        <!--        </dependency>-->
 
         <!-- https://mvnrepository.com/artifact/org.apache.xmlgraphics/batik-all -->
         <dependency>
@@ -148,5 +112,6 @@
         </dependency>
 
     </dependencies>
+
 
 </project>

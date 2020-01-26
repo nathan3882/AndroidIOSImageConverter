@@ -101,7 +101,8 @@ public abstract class SvgImageTransformer implements Transformable {
             baseSvgFile.resizeInMemory(width, height);
 
             final String outputPath = baseSvgFile.saveTo(outputLocation, true);
-            System.out.println(getTransformerType().getPretty() + " file " + baseSvgFile + " resized and created @ " + outputPath + ".");
+            System.out.println(getTransformerType().getPretty() + " file " + FilenameUtils.getName(outputPath) + " resized to" +
+                    " " + baseSvgFile.getHeight() + "x" + baseSvgFile.getWidth() + " & created @ " + outputPath + ".");
 
             if (isPngAlso) {
                 try {
