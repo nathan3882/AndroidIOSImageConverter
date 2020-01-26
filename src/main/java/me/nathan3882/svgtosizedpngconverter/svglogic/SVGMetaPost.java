@@ -29,19 +29,6 @@ public class SVGMetaPost {
     }
 
     /**
-     * Finds all the path nodes and converts them to MetaPost code.
-     */
-    public void run() {
-        NodeList pathNodes = getPathElements();
-        int pathNodeCount = pathNodes.getLength();
-
-        for (int iPathNode = 0; iPathNode < pathNodeCount; iPathNode++) {
-            MetaPostPath mpp = new MetaPostPath(pathNodes.item(iPathNode));
-            System.out.println(mpp.toCode());
-        }
-    }
-
-    /**
      * Returns a list of elements in the SVG document with names that
      * match PATH_ELEMENT_NAME.
      *
