@@ -139,6 +139,12 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-collections4</artifactId>
             <version>LATEST</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>batik-svgbrowser</artifactId>
+                    <groupId>org.apache.xmlgraphics</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
     </dependencies>

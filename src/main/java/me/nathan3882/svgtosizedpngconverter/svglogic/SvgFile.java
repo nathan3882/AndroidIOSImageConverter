@@ -2,15 +2,24 @@ package me.nathan3882.svgtosizedpngconverter.svglogic;
 
 import me.nathan3882.svgtosizedpngconverter.exceptions.DuplicateFileException;
 import me.nathan3882.svgtosizedpngconverter.exceptions.LackOfTransformationException;
+import me.nathan3882.svgtosizedpngconverter.types.FileType;
 import org.apache.batik.anim.dom.SVGOMDocument;
 import org.apache.batik.anim.dom.SVGOMSVGElement;
+import org.apache.batik.transcoder.TranscoderException;
+import org.apache.batik.transcoder.TranscoderInput;
+import org.apache.batik.transcoder.TranscoderOutput;
+import org.apache.batik.transcoder.image.PNGTranscoder;
 import org.apache.commons.io.FilenameUtils;
 
 import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.net.URI;
+import java.net.URL;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -19,16 +28,19 @@ import java.util.Optional;
 public class SvgFile extends File implements TwoDimentional {
 
     private static Transformer transformer;
+    private static PNGTranscoder pngTranscoder;
+
 
     static {
+        pngTranscoder = new PNGTranscoder();
         try {
             transformer = TransformerFactory.newInstance().newTransformer();
         } catch (TransformerConfigurationException e) {
             e.printStackTrace();
         }
     }
-
     private SVGOMDocument resizedDocument;
+    private SvgFile resizedSvgFile;
     private Integer height;
     private Integer width;
 
@@ -79,12 +91,12 @@ public class SvgFile extends File implements TwoDimentional {
     }
 
     /**
-     * This function will save a resized {@link SvgFile}'s {@link }
+     * This function will save a resized {@link SvgFile} and return the new svg instance that is equal to that resized svg
      *
      * @return a resized {@link SvgFile}
      * @throws DuplicateFileException
      */
-    public SvgFile saveTo(File specifiedOutputFile, boolean pngToo) throws DuplicateFileException, LackOfTransformationException, TransformerException, IOException {
+    public String saveTo(File specifiedOutputFile, boolean pngToo) throws DuplicateFileException, LackOfTransformationException, TransformerException, IOException {
         final Optional<SVGOMDocument> resizedDocumentOptional = getResizedDocument();
 
         if (!resizedDocumentOptional.isPresent()) {
@@ -106,10 +118,11 @@ public class SvgFile extends File implements TwoDimentional {
 
         final String parent = outputFile.getParent();
         final Path outputFileParentPath = new File(parent).toPath();
+
         try {
             Files.createDirectory(outputFileParentPath);
         } catch (FileAlreadyExistsException e) {
-//            file already exists...... we just deleted it.... wut
+            // file already exists...... we just deleted it.... wut
         }
 
         final StreamResult outputFileStreamResult = new StreamResult(outputFile.getPath());
@@ -118,9 +131,42 @@ public class SvgFile extends File implements TwoDimentional {
 
         getTransformer().transform(inputDomSource, outputFileStreamResult);
 
-        //After weve got the svg, convert to png.
+        this.resizedSvgFile = outputFile;
+        return outputFile.getPath();
+    }
 
-        return outputFile;
+    /**
+     * This function creates a png file in the same location that the scaled svg file will be located.
+     */
+    public void createPngAlternative() throws IOException, TranscoderException {
+
+        //Step -1: We read the input SVG document into Transcoder Input
+        //We use Java NIO for this purpose
+        final SvgFile resizedSvgFile = getResizedSvgFile();
+
+        final String svgInputNameWithoutExtension = FilenameUtils.removeExtension(resizedSvgFile.getName());
+
+        final String convertThisToPng = resizedSvgFile.toURI().toURL().toString();
+
+        final TranscoderInput svgTranscoderInput = new TranscoderInput(convertThisToPng);
+
+        //Step-2: Define OutputStream to PNG Image and attach to TranscoderOutput
+
+        final String outputPngFileName = svgInputNameWithoutExtension + FileType.PNG.getExtensionWithDot();
+
+        final String parent = resizedSvgFile.getParent();
+        final String pathToOutputPng = parent + File.separatorChar + outputPngFileName;
+
+        final File outputPngFile = new File(pathToOutputPng);
+
+        OutputStream pngOutputStream = new FileOutputStream(outputPngFile);
+
+        TranscoderOutput pngOutputTranscoder = new TranscoderOutput(pngOutputStream);
+
+        pngTranscoder.transcode(svgTranscoderInput, pngOutputTranscoder);
+
+        pngOutputStream.flush();
+        pngOutputStream.close();
     }
 
     @Override
@@ -138,6 +184,10 @@ public class SvgFile extends File implements TwoDimentional {
     public int getWidth() {
         final Optional<Integer> newWidth = Optional.ofNullable(this.height);
         return newWidth.isPresent() ? newWidth.get() : 0;
+    }
+
+    public SvgFile getResizedSvgFile() {
+        return resizedSvgFile;
     }
 
     /**

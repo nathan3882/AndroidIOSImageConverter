@@ -81,7 +81,7 @@ public class SvgToSizedPngConverter {
         }
     }
 
-    private static void doTransformation(File imageOutputDirectory, String specifiedInputFilePathname) throws IOException, TranscoderException, TransformerException, DuplicateFileException, LackOfTransformationException {
+    private static void doTransformation(File imageOutputDirectory, String specifiedInputFilePathname) throws IOException, TransformerException, DuplicateFileException, LackOfTransformationException {
         final File inputFile = new File(specifiedInputFilePathname);
 
         final boolean exists = inputFile.exists();
@@ -93,22 +93,29 @@ public class SvgToSizedPngConverter {
 
         //at this point we know that the file exists and it has a file extension of svg.
         SvgImageTransformer iOSImageTransformer = new IOSImageTransformer(inputFile, imageOutputDirectory);
+
         SvgImageTransformer androidImageTransformer = new AndroidImageTransformer(inputFile, imageOutputDirectory);
 
-        final boolean iOSDoneSuccessfully = iOSImageTransformer.transform();
-        final boolean isAndroidDoneSuccessfully = androidImageTransformer.transform();
+        final boolean doPngAlso = true;
+
+        final boolean iOSDoneSuccessfully = iOSImageTransformer.transform(doPngAlso);
+        final boolean isAndroidDoneSuccessfully = androidImageTransformer.transform(doPngAlso);
+
+        final String androidPretty = androidImageTransformer.getTransformerType().getPretty();
+        final String iosPretty = iOSImageTransformer.getTransformerType().getPretty();
 
         if (iOSDoneSuccessfully) {
-            System.out.println(iOSImageTransformer.getTransformerType().getPretty() + " images have been created at " + iOSImageTransformer.getOutputDirectory());
-            return;
+            System.out.println(iosPretty + " images have been created at " + iOSImageTransformer.getOutputDirectory());
+        } else {
+            System.out.println("Some unknown programmatic error meant that no " + iosPretty + " were created :(");
+
         }
 
         if (isAndroidDoneSuccessfully) {
-            System.out.println(androidImageTransformer.getTransformerType().getPretty() + " images have been created at " + androidImageTransformer.getOutputDirectory());
-            return;
+            System.out.println(androidPretty + " images have been created at " + androidImageTransformer.getOutputDirectory());
+        } else {
+            System.out.println("Some unknown programmatic error meant that no " + androidPretty + " + were created :(");
         }
-
-        System.out.println("Some unknown programmatic error meant that neither ios or android images were created :(");
     }
 
     private static List<Option> getConfiguredArgumentOptions() {

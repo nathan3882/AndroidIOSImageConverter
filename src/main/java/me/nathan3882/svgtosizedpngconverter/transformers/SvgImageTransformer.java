@@ -8,6 +8,7 @@ import me.nathan3882.svgtosizedpngconverter.types.AndroidCompatibleImageType;
 import me.nathan3882.svgtosizedpngconverter.types.FilenameAttachableImageType;
 import me.nathan3882.svgtosizedpngconverter.types.IOSCompatibleImageType;
 import org.apache.batik.anim.dom.SVGDOMImplementation;
+import org.apache.batik.transcoder.TranscoderException;
 import org.apache.commons.io.FilenameUtils;
 import org.w3c.dom.DOMImplementation;
 
@@ -70,7 +71,7 @@ public abstract class SvgImageTransformer implements Transformable {
      * This function should be overridden to transform the {@link #inputSvgAsBufferedImage} into
      * png files that are placed into the {@link #outputDirectoryPath}
      */
-    public boolean transform() throws IOException, TransformerException, DuplicateFileException, LackOfTransformationException {
+    public boolean transform(boolean isPngAlso) throws IOException, TransformerException, DuplicateFileException, LackOfTransformationException {
 
         String outputDirPath = getOutputDirectory().getPath();
         final Path dir = new File(outputDirPath).toPath();
@@ -78,13 +79,13 @@ public abstract class SvgImageTransformer implements Transformable {
             Files.createDirectory(dir);
             System.out.println("Created directory @ " + outputDirPath + " to house the images.");
         } catch (FileAlreadyExistsException e) {
-//            The directory @ outputDirPath already exists... goody.
+            //The directory @ outputDirPath already exists... goody.
         }
 
-        final List<? extends FilenameAttachableImageType> iosCompatibleImageTypes =
+        final List<? extends FilenameAttachableImageType> imageTypes =
                 getTransformerType() == TransformerType.ANDROID ? AndroidCompatibleImageType.asList() : IOSCompatibleImageType.asList();
 
-        for (FilenameAttachableImageType imageType : iosCompatibleImageTypes) {
+        for (FilenameAttachableImageType imageType : imageTypes) {
 
             final String outputDirectoryBeforePotentialPrepend = outputDirPath + File.separatorChar;
 
@@ -99,18 +100,16 @@ public abstract class SvgImageTransformer implements Transformable {
 
             baseSvgFile.resizeInMemory(width, height);
 
-//            try {
-//                Files.createDirectory(outputLocation.toPath());
-//            } catch (FileAlreadyExistsException e) {
-//                Directory to house amendedFileName already exists, goody
-//            } catch (NoSuchFileException exception) {
-//                about to create the file
-//            }
+            final String outputPath = baseSvgFile.saveTo(outputLocation, true);
+            System.out.println(getTransformerType().getPretty() + " file " + baseSvgFile + " resized and created @ " + outputPath + ".");
 
-            final SvgFile resizedSvgFile = baseSvgFile.saveTo(outputLocation, true);
-
-            System.out.println(getTransformerType().getPretty() + " file " + baseSvgFile + " resized and created @ " + resizedSvgFile + ".");
-
+            if (isPngAlso) {
+                try {
+                    baseSvgFile.createPngAlternative();
+                } catch (TranscoderException e) {
+                    e.printStackTrace();
+                }
+            }
             //convert to png
         }
         return true;

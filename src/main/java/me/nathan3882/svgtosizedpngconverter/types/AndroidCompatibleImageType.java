@@ -22,7 +22,7 @@ public enum AndroidCompatibleImageType implements FilenameAttachableImageType {
     XXX_HDPI("xxxhdpi", 192, 192), //	Resources for extra-extra-extra-high-density (xxxhdpi) uses (~640dpi).
 
     //	Resources for all densities. These are density-independent resources.
-    NO_DPI("nodpi", 0, 0); //  The system does not scale resources tagged with this qualifier, regardless of the current screen's density.
+    NO_DPI("nodpi", 1, 1); //  The system does not scale resources tagged with this qualifier, regardless of the current screen's density.
 
 
     private final String densityString;
