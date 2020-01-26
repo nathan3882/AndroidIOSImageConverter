@@ -30,11 +30,6 @@ public enum IOSCompatibleImageType implements FilenameAttachableImageType {
         return false;
     }
 
-    @Override
-    public boolean isAppended() {
-        return true;
-    }
-
     /**
      * This gets the string that will be appended to the output png image for IOS image types.
      *

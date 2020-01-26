@@ -44,11 +44,6 @@ public enum AndroidCompatibleImageType implements FilenameAttachableImageType {
         return true; //we need to prepend a slash as Android images are all in different sub directories.
     }
 
-    @Override
-    public boolean isAppended() {
-        return false;
-    }
-
     /**
      * Get the width
      *
