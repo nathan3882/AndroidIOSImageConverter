@@ -142,15 +142,14 @@ public class SvgFile extends File implements TwoDimentional {
         //We use Java NIO for this purpose
         final SvgFile resizedSvgFile = getResizedSvgFile();
 
-        final String svgInputNameWithoutExtension = FilenameUtils.removeExtension(resizedSvgFile.getName());
 
-        final String convertThisToPng = resizedSvgFile.toURI().toURL().toString();
+        /*{@link SvgFile#toURL()} is deprecated below*/
+        final String newPngPathURL = resizedSvgFile.toURI().toURL().toString();
 
-        final TranscoderInput svgTranscoderInput = new TranscoderInput(convertThisToPng);
+        final TranscoderInput svgTranscoderInput = new TranscoderInput(newPngPathURL);
 
-        //Step-2: Define OutputStream to PNG Image and attach to TranscoderOutput
-
-        final String outputPngFileName = svgInputNameWithoutExtension + FileType.PNG.getExtensionWithDot();
+        //Strip the svg extension, then append a ".png"'
+        final String outputPngFileName = FilenameUtils.removeExtension(resizedSvgFile.getName()) + FileType.PNG.getExtensionWithDot();
 
         final String parent = resizedSvgFile.getParent();
         final String pathToOutputPng = parent + File.separatorChar + outputPngFileName;

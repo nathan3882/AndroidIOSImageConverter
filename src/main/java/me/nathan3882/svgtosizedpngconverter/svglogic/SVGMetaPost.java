@@ -5,7 +5,6 @@ import org.apache.batik.anim.dom.SVGOMSVGElement;
 import org.apache.batik.bridge.*;
 import org.apache.batik.util.XMLResourceDescriptor;
 import org.w3c.dom.Document;
-import org.w3c.dom.NodeList;
 
 import java.io.IOException;
 
@@ -28,15 +27,6 @@ public class SVGMetaPost {
         setSVGDocument(createSVGDocument(uri));
     }
 
-    /**
-     * Returns a list of elements in the SVG document with names that
-     * match PATH_ELEMENT_NAME.
-     *
-     * @return The list of "path" elements in the SVG document.
-     */
-    private NodeList getPathElements() {
-        return getSVGDocumentRoot().getElementsByTagName(PATH_ELEMENT_NAME);
-    }
 
     /**
      * Returns an SVGOMSVGElement that is the document's root element.

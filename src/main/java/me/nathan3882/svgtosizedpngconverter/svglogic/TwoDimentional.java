@@ -5,4 +5,5 @@ public interface TwoDimentional {
     int getHeight();
 
     int getWidth();
+
 }
