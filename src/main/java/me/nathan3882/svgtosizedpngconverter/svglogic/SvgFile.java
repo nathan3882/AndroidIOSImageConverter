@@ -1,5 +1,20 @@
 package me.nathan3882.svgtosizedpngconverter.svglogic;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Optional;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import me.nathan3882.svgtosizedpngconverter.exceptions.DuplicateFileException;
 import me.nathan3882.svgtosizedpngconverter.exceptions.LackOfTransformationException;
 import me.nathan3882.svgtosizedpngconverter.types.FileType;
@@ -10,18 +25,6 @@ import org.apache.batik.transcoder.TranscoderInput;
 import org.apache.batik.transcoder.TranscoderOutput;
 import org.apache.batik.transcoder.image.PNGTranscoder;
 import org.apache.commons.io.FilenameUtils;
-
-import javax.xml.transform.*;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.file.FileAlreadyExistsException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Optional;
 
 public class SvgFile extends File implements TwoDimentional {
 
@@ -69,15 +72,22 @@ public class SvgFile extends File implements TwoDimentional {
      *
      * @param newWidth  the new width
      * @param newHeight the new height
-     * @throws IOException          if error occurs during i/o of SVG file bytes.
-     * @throws TransformerException if we couldnt initialise the {@link Transformer}
+     * @throws IOException if error occurs during i/o of SVG file bytes.
      */
-    public void resizeInMemory(int newWidth, int newHeight) throws IOException, TransformerException {
+    public boolean resizeInMemory(int newWidth, int newHeight) {
         this.height = newHeight;
         this.width = newWidth;
 
         final String uri = super.toURI().toString();
-        final SvgMetaPost svgMetaPost = new SvgMetaPost(uri);
+
+        final SvgMetaPost svgMetaPost;
+
+        try {
+            svgMetaPost = new SvgMetaPost(uri);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
 
         final SVGOMDocument svgDocument = (SVGOMDocument) svgMetaPost.getSVGDocument();
         final SVGOMSVGElement documentElement = (SVGOMSVGElement) svgDocument.getDocumentElement();
@@ -86,6 +96,7 @@ public class SvgFile extends File implements TwoDimentional {
         documentElement.setAttribute(AttributeName.HEIGHT.getPretty(), String.valueOf(newHeight));
 
         this.resizedDocument = svgDocument;
+        return true;
     }
 
     /**

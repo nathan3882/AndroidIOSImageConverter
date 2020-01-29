@@ -1,5 +1,12 @@
 package me.nathan3882.svgtosizedpngconverter.transformers;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+import javax.xml.transform.TransformerException;
 import me.nathan3882.svgtosizedpngconverter.TransformerType;
 import me.nathan3882.svgtosizedpngconverter.exceptions.DuplicateFileException;
 import me.nathan3882.svgtosizedpngconverter.exceptions.LackOfTransformationException;
@@ -11,16 +18,6 @@ import org.apache.batik.anim.dom.SVGDOMImplementation;
 import org.apache.batik.transcoder.TranscoderException;
 import org.apache.commons.io.FilenameUtils;
 import org.w3c.dom.DOMImplementation;
-
-import javax.imageio.ImageIO;
-import javax.xml.transform.TransformerException;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.FileAlreadyExistsException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.List;
 
 /**
  * This is a base class that offers some generic functionality for Svg Image Transformer classes
@@ -35,7 +32,6 @@ public abstract class SvgImageTransformer implements Transformable {
 
     private final File inputSvgFile;
     private final String inputSvgFileName;
-    private final BufferedImage inputSvgAsBufferedImage;
     private final String outputDirectoryPath;
     private final String inputSvgPath;
 
@@ -43,54 +39,31 @@ public abstract class SvgImageTransformer implements Transformable {
         this.inputSvgFile = inputSvgFile;
         this.inputSvgFileName = inputSvgFile.getName();
         this.inputSvgPath = inputSvgFile.getPath();
-        this.inputSvgAsBufferedImage = ImageIO.read(this.inputSvgFile);
         this.outputDirectoryPath = outputDirectoryPath.getPath();
     }
 
     /**
-     * Strips the file name of it's extension if {@param imageType #isAppended} and then appends an attach string after the withoutExtension String
-     * Otherwise if {@param imageType #isPrepended} and then prepends the string.
-     *
-     * @param outputDirectory the file name with the extension still intact.
-     * @param imageType       the image type to then fetch the appendable string from.
-     * @return a new file name appended with the appendable string from {@link FilenameAttachableImageType}.
-     */
-    public static String getAmendedFileName(String outputDirectory, String fileNameWithExtension, FilenameAttachableImageType imageType) {
-
-        if (imageType.isPrepended()) {
-            return outputDirectory + imageType.getFilenameAttachString() + fileNameWithExtension;
-        }
-        //If we reach here, we know that the image type is appended after the name but before the extension.
-        final String noExtension = FilenameUtils.removeExtension(fileNameWithExtension);
-        final String extension = FilenameUtils.getExtension(fileNameWithExtension);
-
-        return outputDirectory + noExtension + imageType.getFilenameAttachString() + "." + extension;
-    }
-
-    /**
-     * This function should be overridden to transform the {@link #inputSvgAsBufferedImage} into
-     * png files that are placed into the {@link #outputDirectoryPath}
+     * This function should be overridden to transform the {@link #inputSvgPath} svg file into
+     * png files that are placed into the overridden abstract function {@link #getOutputDirectory}
      */
     public boolean transform(boolean isPngAlso) throws IOException, TransformerException, DuplicateFileException, LackOfTransformationException {
 
-        String outputDirPath = getOutputDirectory().getPath();
-        final Path dir = new File(outputDirPath).toPath();
         try {
+            String outputDirPath = getOutputDirectory().getPath();
+            Path dir = new File(outputDirPath).toPath();
             Files.createDirectory(dir);
             System.out.println("Created directory @ " + outputDirPath + " to house the images.");
         } catch (FileAlreadyExistsException e) {
             //The directory @ outputDirPath already exists... goody.
         }
 
-        final List<? extends FilenameAttachableImageType> imageTypes =
+        List<? extends FilenameAttachableImageType> imageTypes =
                 getTransformerType() == TransformerType.ANDROID ? AndroidCompatibleImageType.asList() : IOSCompatibleImageType.asList();
 
         for (FilenameAttachableImageType imageType : imageTypes) {
 
-            final String outputDirectoryBeforePotentialPrepend = outputDirPath + File.separatorChar;
-
             final String inputSvgFileName = getInputSvgFileName();
-            final String amendedFileName = SvgImageTransformer.getAmendedFileName(outputDirectoryBeforePotentialPrepend, inputSvgFileName, imageType);
+            final String amendedFileName = this.getAmendedFileName(inputSvgFileName, imageType);
             final File outputLocation = new File(amendedFileName);
 
             final int width = imageType.getWidth();
@@ -98,23 +71,52 @@ public abstract class SvgImageTransformer implements Transformable {
 
             SvgFile baseSvgFile = SvgFile.fromFile(this.getInputSvgPath());
 
-            baseSvgFile.resizeInMemory(width, height);
+            final boolean wasResizeSuccessful = baseSvgFile.resizeInMemory(width, height);
+
+            if (!wasResizeSuccessful) {
+                System.out.println("ERROR: " + getTransformerType().getPretty() + " file could not be resized to" +
+                        " " + baseSvgFile.getHeight() + "x" + baseSvgFile.getWidth() + " due to an IOException :(");
+                continue;
+            }
 
             final String outputPath = baseSvgFile.saveTo(outputLocation, true);
+
             System.out.println(getTransformerType().getPretty() + " file " + FilenameUtils.getName(outputPath) + " resized to" +
                     " " + baseSvgFile.getHeight() + "x" + baseSvgFile.getWidth() + " & created @ " + outputPath + ".");
 
-            if (isPngAlso) {
-                try {
-                    baseSvgFile.createPngAlternative();
-                    System.out.print(" Created a png alternative in the same directory also!");
-                } catch (TranscoderException e) {
-                    e.printStackTrace();
-                }
+            if (!isPngAlso) {
+                continue;
             }
-            //convert to png
+
+            try {
+                baseSvgFile.createPngAlternative();
+                System.out.print("Created a png alternative in the same directory also!");
+            } catch (TranscoderException e) {
+                return false;
+            }
+
         }
         return true;
+    }
+
+    /**
+     * Strips the file name of it's extension if {@param imageType #isAppended} and then appends an attach string after the withoutExtension String
+     * Otherwise if {@param imageType #isPrepended} and then prepends the string.
+     *
+     * @param imageType the image type to then fetch the appendable string from.
+     * @return a new file name appended with the appendable string from {@link FilenameAttachableImageType}.
+     */
+    public String getAmendedFileName(String fileNameWithExtension, FilenameAttachableImageType imageType) {
+
+        if (imageType.isPrepended()) {
+            return getOutputDirectory() + imageType.getFilenameAttachString() + fileNameWithExtension;
+        }
+
+        //If we reach here, we know that the image type is appended after the name but before the extension.
+        final String noExtension = FilenameUtils.removeExtension(fileNameWithExtension);
+        final String extension = FilenameUtils.getExtension(fileNameWithExtension);
+
+        return getOutputDirectory() + noExtension + imageType.getFilenameAttachString() + "." + extension;
     }
 
     protected String getOutputDirectoryPath() {
@@ -126,6 +128,7 @@ public abstract class SvgImageTransformer implements Transformable {
     public String getInputSvgPath() {
         return inputSvgPath;
     }
+
     public String getInputSvgFileName() {
         return inputSvgFileName;
     }
