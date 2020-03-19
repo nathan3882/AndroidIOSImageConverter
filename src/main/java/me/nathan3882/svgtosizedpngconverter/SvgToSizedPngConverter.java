@@ -1,15 +1,5 @@
 package me.nathan3882.svgtosizedpngconverter;
 
-import me.nathan3882.svgtosizedpngconverter.exceptions.DuplicateFileException;
-import me.nathan3882.svgtosizedpngconverter.exceptions.LackOfTransformationException;
-import me.nathan3882.svgtosizedpngconverter.transformers.AndroidImageTransformer;
-import me.nathan3882.svgtosizedpngconverter.transformers.IOSImageTransformer;
-import me.nathan3882.svgtosizedpngconverter.transformers.SvgImageTransformer;
-import me.nathan3882.svgtosizedpngconverter.types.FileType;
-import org.apache.commons.cli.*;
-import org.apache.commons.io.FilenameUtils;
-
-import javax.xml.transform.TransformerException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,6 +7,23 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Scanner;
+
+import javax.xml.transform.TransformerException;
+
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.MissingOptionException;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
+import org.apache.commons.io.FilenameUtils;
+
+import me.nathan3882.svgtosizedpngconverter.exceptions.DuplicateFileException;
+import me.nathan3882.svgtosizedpngconverter.exceptions.LackOfTransformationException;
+import me.nathan3882.svgtosizedpngconverter.transformers.AndroidImageTransformer;
+import me.nathan3882.svgtosizedpngconverter.transformers.IOSImageTransformer;
+import me.nathan3882.svgtosizedpngconverter.transformers.SvgImageTransformer;
+import me.nathan3882.svgtosizedpngconverter.types.FileType;
 
 public class SvgToSizedPngConverter {
 
@@ -71,7 +78,7 @@ public class SvgToSizedPngConverter {
                     "Now outputting the iOS Images and Android Images to " + specifiedOutputFileDirectory + System.getProperty("line.separator"));
             sendBlank();
             if (specifiedOutputFileDirectory.equals("desktop")) {
-                imageOutputDirectory = new File(System.getProperty("user.home") + File.separatorChar + "Desktop");
+                imageOutputDirectory = new File("C:\\Users\\natha\\OneDrive\\Desktop");
             } else {
                 imageOutputDirectory = new File(specifiedOutputFileDirectory);
             }
@@ -201,7 +208,6 @@ public class SvgToSizedPngConverter {
                 .desc(inputFileArgument.getDescription())
                 .required()
                 .build();
-
 
         return Arrays.asList(builtOutputArgumentOption, builtInputArgumentOption);
     }
